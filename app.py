@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import tempfile
 import fitz
-from PyPDF2 import PdfFileWriter
+from PyPDF2 import PdfWriter
 from transformers.pipelines import pipeline
 
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
@@ -19,7 +19,7 @@ def compress_pdf(input_path, target_size_mb):
 
     pdf_document = fitz.open(input_path)
 
-    pdf_writer = PdfFileWriter()
+    pdf_writer = PdfWriter()
 
     compression_ratio = target_size_bytes / input_size_bytes
 
