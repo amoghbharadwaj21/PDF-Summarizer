@@ -122,7 +122,6 @@ def main():
 
             # Clean up: remove temporary files
             os.remove(temp_input_path)
-            # os.remove(temp_output_path)
 
 if __name__ == "__main__":
     main()
