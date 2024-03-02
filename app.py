@@ -71,8 +71,8 @@ def process_in_chunks(text, chunk_size, max_length, min_length):
         adjusted_max_length = max(adjusted_max_length, 100)  # Set a minimum value for adjusted_max_length
 
         # Print statements for debugging
-        print(f"Chunk length: {len(chunk)}")
-        print(f"Adjusted max_length: {adjusted_max_length}")
+        # print(f"Chunk length: {len(chunk)}")
+        # print(f"Adjusted max_length: {adjusted_max_length}")
 
         summary = summarizer(chunk, max_length=adjusted_max_length, min_length=min_length)
         summarized_chunks.append(summary[0]['summary_text'])
