@@ -1,9 +1,9 @@
 import os
 import streamlit as st
+import tempfile
 import fitz
 from PyPDF2 import PdfFileWriter
 from transformers.pipelines import pipeline
-import tempfile
 
 # Load the summarization pipeline with the BART model
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
@@ -19,9 +19,8 @@ def compress_pdf(input_path, target_size_mb):
         # No need to compress if the file is already smaller than the target size
         return input_path
 
-    # Create a temporary directory for storing compressed PDF
-    temp_dir = tempfile.mkdtemp()
-    output_path = os.path.join(temp_dir, "temp_output.pdf")
+    # Determine the output path for the compressed PDF in the same directory
+    output_path = os.path.join(os.path.dirname(input_path), "temp_output.pdf")
 
     # Use PyMuPDF to open the input PDF
     pdf_document = fitz.open(input_path)
@@ -83,22 +82,24 @@ def process_in_chunks(text, chunk_size, max_length, min_length):
     return full_summary
 
 def main():
-    st.title("PDF Summarizer with Streamlit")
+    st.title("PDF Summarizer")
 
     uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
 
     if uploaded_file is not None:
         # Display a loading message for file uploading
         with st.spinner("Uploading and processing the file..."):
-            # Create a temporary directory for storing input PDF
-            temp_dir_input = tempfile.mkdtemp()
-            temp_input_path = os.path.join(temp_dir_input, "temp_input.pdf")
-            
+            # Create a temporary directory for storing files
+            temp_dir = tempfile.TemporaryDirectory()
+            temp_input_path = os.path.join(temp_dir.name, "temp.pdf")
             with open(temp_input_path, 'wb') as temp_input_file:
                 temp_input_file.write(uploaded_file.read())
 
+            # Set the target size limit to 5MB
+            target_size_mb = 5
+
             # Compress the PDF to the target size
-            temp_output_path = compress_pdf(temp_input_path, target_size_mb=5)
+            temp_output_path = compress_pdf(temp_input_path, target_size_mb)
 
             # Extract text from the compressed PDF
             text = extract_text_from_pdf(temp_output_path)
@@ -121,10 +122,8 @@ def main():
                     st.subheader("Summary:")
                     st.write(full_summary_chunks[0])
 
-            # Clean up: remove temporary files
-            os.remove(temp_input_path)
-            # os.remove(temp_output_path)
-            os.rmdir(temp_dir_input)
+            # Clean up: remove temporary directory and its contents
+            temp_dir.cleanup()
 
 if __name__ == "__main__":
     main()
