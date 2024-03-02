@@ -1,0 +1,4 @@
+- type: web
+  name: summarize-pdf
+  build_command: pip install -r requirements.txt
+  start_command: streamlit run app.py
