@@ -3,4 +3,3 @@ PyMuPDF==1.23.26
 PyPDF2==3.0.1
 transformers==4.38.2
 torch==2.2.1
-python==3.10.4
