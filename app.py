@@ -3,6 +3,7 @@ import streamlit as st
 import fitz
 from PyPDF2 import PdfFileWriter
 from transformers.pipelines import pipeline
+import tempfile
 
 # Load the summarization pipeline with the BART model
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
@@ -18,8 +19,9 @@ def compress_pdf(input_path, target_size_mb):
         # No need to compress if the file is already smaller than the target size
         return input_path
 
-    # Determine the output path for the compressed PDF in the same directory
-    output_path = os.path.join(os.path.dirname(input_path), "temp_output.pdf")
+    # Create a temporary directory for storing compressed PDF
+    temp_dir = tempfile.mkdtemp()
+    output_path = os.path.join(temp_dir, "temp_output.pdf")
 
     # Use PyMuPDF to open the input PDF
     pdf_document = fitz.open(input_path)
@@ -88,16 +90,15 @@ def main():
     if uploaded_file is not None:
         # Display a loading message for file uploading
         with st.spinner("Uploading and processing the file..."):
-            # Set the target size limit to 5MB
-            target_size_mb = 5
-
-            # Create a file for the input PDF
-            temp_input_path = os.path.join(os.path.dirname(__file__), "temp.pdf")
+            # Create a temporary directory for storing input PDF
+            temp_dir_input = tempfile.mkdtemp()
+            temp_input_path = os.path.join(temp_dir_input, "temp_input.pdf")
+            
             with open(temp_input_path, 'wb') as temp_input_file:
                 temp_input_file.write(uploaded_file.read())
 
             # Compress the PDF to the target size
-            temp_output_path = compress_pdf(temp_input_path, target_size_mb)
+            temp_output_path = compress_pdf(temp_input_path, target_size_mb=5)
 
             # Extract text from the compressed PDF
             text = extract_text_from_pdf(temp_output_path)
@@ -122,6 +123,8 @@ def main():
 
             # Clean up: remove temporary files
             os.remove(temp_input_path)
+            # os.remove(temp_output_path)
+            os.rmdir(temp_dir_input)
 
 if __name__ == "__main__":
     main()
